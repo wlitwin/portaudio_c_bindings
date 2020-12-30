@@ -17,5 +17,6 @@
                  )
     (depends
         conf-portaudio
+        ctypes
     )
 )
