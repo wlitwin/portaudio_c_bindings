@@ -1,18 +1,18 @@
 let () = 
     let open Ocaml_portaudio in    
-    Portaudio.initialize();
-    print_endline Portaudio.(get_version_text());
+    initialize();
+    print_endline (get_version_text());
     let sample_rate = 44100. in
     let dt = 1. /. sample_rate in
     let global_time = ref 0. in
-    let stream = Portaudio.Stream.open_default_stream 
+    let stream = Stream.open_default_stream 
         ~num_input_channels:0
         ~num_output_channels:2
-        ~format:Portaudio.SampleFormat.N_Int24
+        ~format:SampleFormat.N_Int24
         ~sample_rate
         ~frames_per_buffer:0
         ~callback:(fun _ out ~time_info:_ ~status:_ -> 
-            let len = Portaudio.View.length out.(0) in
+            let len = View.length out.(0) in
 
             let get_pitch t =
                 if t > 3. then 587.33
@@ -34,28 +34,28 @@ let () =
                 let pitch = get_pitch t in
                 let chan = get_chan t in
                 let v = Float.(sin (t *. 2.*. pi *. pitch)) *. (4096. *. 2048.) in
-                Portaudio.View.set out.((chan + 1) mod 2) i 0;
-                Portaudio.View.set out.(chan) i Float.(to_int v);
+                View.set out.((chan + 1) mod 2) i 0;
+                View.set out.(chan) i Float.(to_int v);
             done;
             global_time := !global_time +. (float len *. dt);
-            Portaudio.Stream.Callback.Result.Continue
+            Stream.Callback.Result.Continue
         )
         ()
     in
-    Portaudio.Stream.start stream;
+    Stream.start stream;
     print_endline "Sleeping";
-    Portaudio.sleep 4000;
+    sleep 4000;
     print_endline "Done Sleeping";
-    Portaudio.Stream.stop stream;
-    let stream = Portaudio.Stream.open_default_stream
+    Stream.stop stream;
+    let stream = Stream.open_default_stream
         ~num_input_channels:0
         ~num_output_channels:2
-        ~format:Portaudio.SampleFormat.N_Float32
+        ~format:SampleFormat.N_Float32
         ~sample_rate
         ~frames_per_buffer:0
         ()
     in
-    let module V = Portaudio.View in
+    let module V = View in
     let sample_rate = Float.to_int sample_rate in
     let data = V.create Ctypes.float ~len:sample_rate in
     let data2 = V.create Ctypes.float ~len:sample_rate in
@@ -64,9 +64,9 @@ let () =
         V.set data i Float.(sin (2. *. pi *. t *. 440.));
         V.set data2 i Float.(sin (2. *. pi *. t *. 880.));
     done;
-    Portaudio.Stream.start stream;
-    Portaudio.Stream.write_non_interleaved stream [|data2; data|];
-    Portaudio.sleep 1000;
-    Portaudio.Stream.stop stream;
-    Portaudio.terminate();
+    Stream.start stream;
+    Stream.write_non_interleaved stream [|data2; data|];
+    sleep 1000;
+    Stream.stop stream;
+    terminate();
 ;;

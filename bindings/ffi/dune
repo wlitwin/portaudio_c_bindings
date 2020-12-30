@@ -1,6 +1,5 @@
 (library
  (name portaudio_bindings_ffi)
- (public_name ocaml_portaudio.bindings.ffi)
  (modules portaudio_bindings_ffi)
  (libraries ocaml_portaudio.types))
 

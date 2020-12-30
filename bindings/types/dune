@@ -1,5 +1,4 @@
 (library
-  (public_name ocaml_portaudio.binding.types)
   (name stubs)
   (modules stubs)
   (libraries ctypes.stubs ctypes.foreign))
@@ -22,7 +21,7 @@
 
 (library
  (name portaudio_types)
- (public_name ocaml_portaudio.types)
+ (public_name ocaml_portaudio.bindings.types)
  (modules portaudio_types stub_types)
  (libraries ocaml_portaudio.binding.types ctypes.stubs ctypes)
  (flags (:standard -w -9-27)))

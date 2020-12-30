@@ -1,6 +1,6 @@
 (**
- * Most functions in this module follow from http://files.portaudio.com/docs/v19-doxydocs/
- * as they are thin wrappers over the base PortAudio library.
+ Most functions in this module follow from {{: http://files.portaudio.com/docs/v19-doxydocs/} PortAudio Doxygen}
+ as they are thin wrappers over the base PortAudio C library.
  *)
 module C_ffi = Portaudio_ffi
 
@@ -49,7 +49,7 @@ module StreamParameters : sig
 end
 
 (**
- * This module is a thin wrapper around {!module:Ctypes.CArray} so you should be careful how you use values of this type. It's mostly to avoid copying during the PortAudio callbacks. If you need to keep data around after the callback, copy it into another array that you manage.
+ This module is a thin wrapper around Ctypes.CArray.t so you should be careful how you use values of this type. It's mostly to avoid copying during the PortAudio callbacks. If you need to keep data around after the callback, copy it into another array that you manage.
  *)
 module View : sig
     type ('a, 'b) t
@@ -89,7 +89,7 @@ module Stream : sig
     end
     
     (**
-     * @param callback An optional callback for the stream. Do not save the view values passed into the callback. Copy the data if it's needed outside the callback.
+     @param callback An optional callback for the stream. Do not save the view values passed into the callback. Copy the data if it's needed outside the callback.
      *)
     val open_stream :  
         ?input_params:('a, 'b, 'c) StreamParameters.t
@@ -102,7 +102,7 @@ module Stream : sig
         -> ('a, 'c) stream
 
     (**
-     * @param callback An optional callback for the stream. Do not save the view values passed into the callback. Copy the data if it's needed outside the callback.
+     @param callback An optional callback for the stream. Do not save the view values passed into the callback. Copy the data if it's needed outside the callback.
      *)
     val open_default_stream :
         num_input_channels:int
@@ -158,7 +158,7 @@ module Stream : sig
 end
 
 (**
- * @param terminate_on_exn if true will raise PortAudio_exn with information about what failed.
+ @param terminate_on_exn if true will raise PortAudio_exn with information about what failed.
  *)
 val initialize : ?terminate_on_exn:bool -> unit -> unit
 val terminate : unit -> unit
