@@ -15,6 +15,7 @@ bug-reports: "https://github.com/wlitwin/ocaml_portaudio/issues"
 depends: [
   "dune" {>= "2.7"}
   "conf-portaudio"
+  "ctypes"
   "odoc" {with-doc}
 ]
 build: [

@@ -1,12 +1,13 @@
 (library
   (name stubs)
+  (public_name ocaml_portaudio.bindings.types.stubs)
   (modules stubs)
   (libraries ctypes.stubs ctypes.foreign))
 
 (executable
  (name stubgen)
  (modules stubgen)
- (libraries ocaml_portaudio.binding.types ctypes.stubs ctypes))
+ (libraries stubs ctypes.stubs ctypes))
 
 (rule (with-stdout-to "stub_types_gen.c" (run "./stubgen.exe")))
 
@@ -23,5 +24,5 @@
  (name portaudio_types)
  (public_name ocaml_portaudio.bindings.types)
  (modules portaudio_types stub_types)
- (libraries ocaml_portaudio.binding.types ctypes.stubs ctypes)
+ (libraries ctypes.stubs ctypes stubs)
  (flags (:standard -w -9-27)))
