@@ -19,6 +19,7 @@
         conf-portaudio
         ctypes
         ctypes.foreign
+        ctypes.foreign.threaded
         ctypes.stubs
     )
 )
