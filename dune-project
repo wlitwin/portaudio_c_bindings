@@ -18,5 +18,7 @@
     (depends
         conf-portaudio
         ctypes
+        ctypes.foreign
+        ctypes.stubs
     )
 )
