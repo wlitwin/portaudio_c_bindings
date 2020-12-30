@@ -1,3 +1,7 @@
+(**
+ * Most functions in this module follow from http://files.portaudio.com/docs/v19-doxydocs/
+ * as they are thin wrappers over the base PortAudio library.
+ *)
 module C_ffi = Portaudio_ffi
 
 module SampleFormat : sig
@@ -44,6 +48,9 @@ module StreamParameters : sig
     }
 end
 
+(**
+ * This module is a thin wrapper around {!module:Ctypes.CArray} so you should be careful how you use values of this type. It's mostly to avoid copying during the PortAudio callbacks. If you need to keep data around after the callback, copy it into another array that you manage.
+ *)
 module View : sig
     type ('a, 'b) t
     val set : ('a, 'b) t -> int -> 'a -> unit
@@ -81,6 +88,9 @@ module Stream : sig
             ('a, 'b) View.t array -> ('a, 'b) View.t array -> time_info:time_info -> status:StatusFlags.t -> cb_result
     end
     
+    (**
+     * @param callback An optional callback for the stream. Do not save the view values passed into the callback. Copy the data if it's needed outside the callback.
+     *)
     val open_stream :  
         ?input_params:('a, 'b, 'c) StreamParameters.t
         -> ?output_params:('a, 'b, 'c) StreamParameters.t
@@ -91,6 +101,9 @@ module Stream : sig
         -> unit
         -> ('a, 'c) stream
 
+    (**
+     * @param callback An optional callback for the stream. Do not save the view values passed into the callback. Copy the data if it's needed outside the callback.
+     *)
     val open_default_stream :
         num_input_channels:int
         -> num_output_channels:int
@@ -144,6 +157,9 @@ module Stream : sig
     val set_finished_callback : ('a, 'b) stream -> (unit -> unit) option -> unit
 end
 
+(**
+ * @param terminate_on_exn if true will raise PortAudio_exn with information about what failed.
+ *)
 val initialize : ?terminate_on_exn:bool -> unit -> unit
 val terminate : unit -> unit
 val sleep : int -> unit
