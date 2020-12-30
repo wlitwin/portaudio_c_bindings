@@ -16,7 +16,6 @@
                  "\| Version corresponds to the portaudio version this was built to."
                  )
     (depends
-        portaudio_bindings_ffi
         conf-portaudio
     )
 )

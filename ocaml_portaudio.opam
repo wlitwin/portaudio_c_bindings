@@ -14,7 +14,6 @@ homepage: "https://github.com/wlitwin/ocaml_portaudio"
 bug-reports: "https://github.com/wlitwin/ocaml_portaudio/issues"
 depends: [
   "dune" {>= "2.7"}
-  "portaudio_bindings_ffi"
   "conf-portaudio"
   "odoc" {with-doc}
 ]
