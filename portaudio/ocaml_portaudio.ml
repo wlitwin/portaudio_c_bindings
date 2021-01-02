@@ -178,25 +178,17 @@ module Stream = struct
 
         type cb_result = C_ffi.StreamCallbackResult.t
 
-        type ('a, 'b) t = 
-            ('a, 'b) View.t array -> ('a, 'b) View.t array -> time_info:time_info -> status:StatusFlags.t -> cb_result
+        type ('a, 'b, 'c, 'd) t = 
+            ('a, 'b) View.t array -> ('c, 'd) View.t array -> time_info:time_info -> status:StatusFlags.t -> cb_result
     end
 
-    type ('a, 'b) stream = {
+    type ('inp_fmt, 'inp_inter, 'out_fmt', 'out_inter) stream = {
         stream : unit ptr ptr;
         callback : C_ffi.pa_stream_callback option;
     }
 
-    let build_views chans interleaved mk_interleaved mk_non_interleaved =
-         if chans = 0 then (fun _ _ -> [||])
-         else (
-             match chans, interleaved with
-             | count, true -> mk_interleaved count
-             | count, false -> mk_non_interleaved count
-         )
-    ;;
-
-    let mk_interleaved typ count = (fun buf len ->
+    let mk_interleaved typ count = 
+        (fun buf len ->
          let arr = CArray.from_ptr (from_voidp typ buf) (len*count) in
          Array.init count (fun i ->
              View.{
@@ -208,15 +200,13 @@ module Stream = struct
          )
     );;
 
-    let mk_non_interleaved typ count = (fun buf len ->
+    let mk_non_interleaved typ count = 
+        (fun buf len ->
          let buf = CArray.from_ptr (from_voidp (ptr typ ) buf) count in
          Array.init count (fun i ->
             CArray.from_ptr (CArray.get buf i) len |> View.create_basic
          )
     );;
-
-    let build_simple_views chans interleaved typ =
-        build_views chans interleaved (mk_interleaved typ) (mk_non_interleaved typ)
 
     let set_sample_24 arr offset value =
          let value = if value < 0 then value + 0x1000000 else value in
@@ -235,7 +225,8 @@ module Stream = struct
          ) else num
     ;;
 
-    let mk_24bit_interleaved typ count = (fun buf len ->
+    let mk_24bit_interleaved typ count = 
+        (fun buf len ->
          let arr = CArray.from_ptr (from_voidp typ buf) (len*count*3) in
          Array.init count (fun i ->
              View.{
@@ -253,7 +244,8 @@ module Stream = struct
          )
     );;
 
-    let mk_24bit_non_interleaved typ count = (fun buf len ->
+    let mk_24bit_non_interleaved typ count = 
+        (fun buf len ->
          let buf = CArray.from_ptr (from_voidp (ptr typ) buf) count in
          Array.init count (fun i ->
             let arr = CArray.from_ptr (CArray.get buf i) (len*3) in
@@ -272,16 +264,13 @@ module Stream = struct
          )
     );;
 
-    let build_24bit_views chans interleaved typ =
-        build_views chans interleaved (mk_24bit_interleaved typ) (mk_24bit_non_interleaved typ)
-
-    let wrap_callback : type a b c. 
-        int -> int -> (a, b, c) SampleFormat.t -> (a, c) Callback.t -> C_ffi.pa_stream_callback
-    = fun in_chans out_chans format callback ->
-        let interleaved = SampleFormat.is_interleaved format in
-        let staged typ build_fn =
-            let specialized_inp = build_fn in_chans interleaved typ in
-            let specialized_out = build_fn out_chans interleaved typ in
+    let wrap_callback : type a b c d e f. 
+        (int * (a, b, c) SampleFormat.t) option
+        -> (int * (d, e, f) SampleFormat.t) option
+        -> (a, c, d, f) Callback.t 
+        -> C_ffi.pa_stream_callback
+    = fun format_in format_out callback ->
+        let staged specialized_inp specialized_out =
             (fun inp out frames time_info status _ -> 
                 let frames = Unsigned.ULong.to_int frames in
                 let inp = specialized_inp inp frames in
@@ -290,24 +279,47 @@ module Stream = struct
                 callback inp out ~time_info ~status
             )
         in
-        match format with
-        | I_Float32 -> staged float build_simple_views
-        | I_Int32 -> staged int32_t build_simple_views
-        | I_Int24 -> staged int8_t build_24bit_views
-        | I_Int16 -> staged int16_t build_simple_views
-        | I_Int8 -> staged int8_t build_simple_views
-        | I_Custom -> staged void build_simple_views
+        let get_build_fn : type a b c. 
+            (a, b, c) SampleFormat.t -> (int -> unit ptr -> int -> (a, c) View.t array) = function
+            | I_Float32 -> mk_interleaved float
+            | I_Int32 -> mk_interleaved int32_t
+            | I_Int24 -> mk_24bit_interleaved int8_t
+            | I_Int16 -> mk_interleaved int16_t
+            | I_Int8 -> mk_interleaved int8_t
+            | I_Custom -> mk_interleaved void
 
-        | N_Float32 -> staged float build_simple_views
-        | N_Int32 -> staged int32_t build_simple_views
-        | N_Int24 -> staged int8_t build_24bit_views
-        | N_Int16 -> staged int16_t build_simple_views
-        | N_Int8 -> staged int8_t build_simple_views
-        | N_Custom -> staged void build_simple_views
+            | N_Float32 -> mk_non_interleaved float
+            | N_Int32 -> mk_non_interleaved int32_t
+            | N_Int24 -> mk_24bit_non_interleaved int8_t
+            | N_Int16 -> mk_non_interleaved int16_t
+            | N_Int8 -> mk_non_interleaved int8_t
+            | N_Custom -> mk_non_interleaved void
+        in
+        let in_fun = 
+            match format_in with
+            | Some (ch_count, fmt) -> get_build_fn fmt ch_count
+            | None -> (fun _ _ -> [||])
+        in
+        let out_fun = 
+            match format_out with
+            | Some (ch_count, fmt) -> get_build_fn fmt ch_count
+            | None -> (fun _ _ -> [||])
+        in
+        staged in_fun out_fun
     ;;
-    
+
+    let get_format_from_stream_params : 
+        type a b c. (a, b, c) StreamParameters.t option -> (int * (a, b, c) SampleFormat.t) option
+        = function
+        | None -> None
+        | Some params ->
+            if params.channel_count > 0 then (
+                Some (params.channel_count, params.sample_format)
+            ) else None
+    ;;
+
     let open_stream 
-        (type a) (type b) (type c)
+        (type a) (type b) (type c) (type d) (type e) (type f)
         ?input_params
         ?output_params
         ~sample_rate 
@@ -315,7 +327,7 @@ module Stream = struct
         ~stream_flags
         ?callback
         ()
-        : (a, c) stream =
+        : (a, c, d, f) stream =
             let stream = allocate (ptr void) null in
             let input = match input_params with
                       | None -> from_voidp (C_ffi.StreamParameters.t) null
@@ -323,34 +335,18 @@ module Stream = struct
             in
             let output = match output_params with
                        | None -> from_voidp (C_ffi.StreamParameters.t) null
-                       | Some (out : (a, b, c) StreamParameters.t)-> StreamParameters.to_cffi out
+                       | Some (out : (d, e, f) StreamParameters.t)-> StreamParameters.to_cffi out
             in 
             let frames = Unsigned.ULong.of_int frames_per_buffer in
             let pa_callback = match callback with
                          | None -> None
-                         | Some (cb : (a, c) Callback.t) ->
-                            let format =
-                                match input_params, output_params with
-                                | Some i, _ -> i.sample_format
-                                | _, Some o -> o.sample_format
-                                | _ -> failwith "Must have either input stream or output stream"
-                            in
-                            let in_channels = 
-                                match input_params with
-                                | None -> 0
-                                | Some s -> s.channel_count
-                            in
-                            let out_channels = 
-                                match output_params with
-                                | None -> 0
-                                | Some s -> s.channel_count
-                            in
+                         | Some (cb : (a, c, d, f) Callback.t) ->
+                            let format_in = get_format_from_stream_params input_params in
+                            let format_out = get_format_from_stream_params output_params in
                             Some (wrap_callback 
-                                in_channels 
-                                out_channels 
-                                format
+                                format_in
+                                format_out
                                 cb)
-
             in
             C_ffi.open_stream stream input output sample_rate frames stream_flags pa_callback null
              |> check_error;
@@ -366,17 +362,21 @@ module Stream = struct
         ~frames_per_buffer
         ?callback
         ()
-        : (a, b) stream =
+        : (a, b, a, b) stream =
         let stream = allocate (ptr void) null in
         let ffi_format = SampleFormat.format_to_cffi format in
         let pa_callback = match callback with
                      | None -> None
-                     | Some (cb : (a, b) Callback.t) -> 
-                         Some (wrap_callback 
-                            num_input_channels
-                            num_output_channels
-                            format cb
-                        )
+                     | Some (cb : (a, b, a, b) Callback.t) -> 
+                         let inp = if num_input_channels > 0 then
+                             Some (num_input_channels, format)
+                             else None
+                         in
+                         let out = if num_output_channels > 0 then 
+                             Some (num_output_channels, format)
+                             else None
+                         in
+                         Some (wrap_callback inp out cb)
         in
         let frames_per_buffer = Unsigned.ULong.of_int frames_per_buffer in
         C_ffi.open_default_stream 

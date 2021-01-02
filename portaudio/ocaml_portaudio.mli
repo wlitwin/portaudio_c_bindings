@@ -64,7 +64,7 @@ module View : sig
 end
 
 module Stream : sig
-    type ('a, 'b) stream
+    type ('inp_fmt, 'inp_inter, 'out_fmt, 'out_inter) stream
 
     module Flags : sig
         type t = C_ffi.StreamFlags.t
@@ -84,8 +84,12 @@ module Stream : sig
 
         type cb_result = Result.t
 
-        type ('a, 'b) t = 
-            ('a, 'b) View.t array -> ('a, 'b) View.t array -> time_info:time_info -> status:StatusFlags.t -> cb_result
+        type ('in_format, 'in_interleaved, 'out_format, 'out_interleaved) t = 
+            ('in_format, 'in_interleaved) View.t array 
+            -> ('out_format, 'out_interleaved) View.t array 
+            -> time_info:time_info 
+            -> status:StatusFlags.t 
+            -> cb_result
     end
     
     (**
@@ -93,13 +97,13 @@ module Stream : sig
      *)
     val open_stream :  
         ?input_params:('a, 'b, 'c) StreamParameters.t
-        -> ?output_params:('a, 'b, 'c) StreamParameters.t
+        -> ?output_params:('d, 'e, 'f) StreamParameters.t
         -> sample_rate:float
         -> frames_per_buffer:int
         -> stream_flags:Flags.t
-        -> ?callback:(('a, 'c) Callback.t)
+        -> ?callback:(('a, 'c, 'd, 'f) Callback.t)
         -> unit
-        -> ('a, 'c) stream
+        -> ('a, 'c, 'd, 'f) stream
 
     (**
      @param callback An optional callback for the stream. Do not save the view values passed into the callback. Copy the data if it's needed outside the callback.
@@ -110,9 +114,9 @@ module Stream : sig
         -> format:('a, 'b, 'c) SampleFormat.t
         -> sample_rate:float
         -> frames_per_buffer:int
-        -> ?callback:(('a, 'c) Callback.t)
+        -> ?callback:(('a, 'c, 'a, 'c) Callback.t)
         -> unit
-        -> ('a, 'c) stream
+        -> ('a, 'c, 'a, 'c) stream
 
     type stream_info = {
         version : int;
@@ -121,40 +125,40 @@ module Stream : sig
         sample_rate : float;
     }
 
-    val start : ('a, 'b) stream -> unit
-    val stop  : ('a, 'b) stream -> unit
-    val close : ('a, 'b) stream -> unit
-    val abort : ('a, 'b) stream -> unit
-    val is_stopped : ('a, 'b) stream -> bool
-    val is_active  : ('a, 'b) stream -> bool
-    val get_info : ('a, 'b) stream -> stream_info
-    val time : ('a, 'b) stream -> pa_time
-    val cpu_load : ('a, 'b) stream -> float
+    val start : ('a, 'b, 'c, 'd) stream -> unit
+    val stop  : ('a, 'b, 'c, 'd) stream -> unit
+    val close : ('a, 'b, 'c, 'd) stream -> unit
+    val abort : ('a, 'b, 'c, 'd) stream -> unit
+    val is_stopped : ('a, 'b, 'c, 'd) stream -> bool
+    val is_active  : ('a, 'b, 'c, 'd) stream -> bool
+    val get_info : ('a, 'b, 'c, 'd) stream -> stream_info
+    val time : ('a, 'b, 'c, 'd) stream -> pa_time
+    val cpu_load : ('a, 'b, 'c, 'd) stream -> float
 
     val read_interleaved : 
-        ('a, SampleFormat.interleaved) stream 
+        ('a, SampleFormat.interleaved, 'c, 'd) stream 
         -> ('a, SampleFormat.interleaved) View.t
         -> unit
 
     val read_non_interleaved : 
-        ('a, SampleFormat.non_interleaved) stream 
+        ('a, SampleFormat.non_interleaved, 'c, 'd) stream 
         -> ('a, SampleFormat.non_interleaved) View.t array
         -> unit
 
     val write_interleaved : 
-        ('a, SampleFormat.interleaved) stream 
-        -> ('a, SampleFormat.interleaved) View.t
+        ('a, 'b, 'c, SampleFormat.interleaved) stream 
+        -> ('c, SampleFormat.interleaved) View.t
         -> unit
 
     val write_non_interleaved : 
-        ('a, SampleFormat.non_interleaved) stream 
-        -> ('a, SampleFormat.non_interleaved) View.t array
+        ('a, 'b, 'c, SampleFormat.non_interleaved) stream 
+        -> ('c, SampleFormat.non_interleaved) View.t array
         -> unit
 
-    val read_available : ('a, 'b) stream -> int
-    val write_available : ('a, 'b) stream -> int
+    val read_available : ('a, 'b, 'c, 'd) stream -> int
+    val write_available : ('a, 'b, 'c, 'd) stream -> int
 
-    val set_finished_callback : ('a, 'b) stream -> (unit -> unit) option -> unit
+    val set_finished_callback : ('a, 'b, 'c, 'd) stream -> (unit -> unit) option -> unit
 end
 
 (**

@@ -9,17 +9,13 @@
 
 (package
     (name ocaml_portaudio)
-    (version 0.19.6)
-    (synopsis "Bindings to the C portaudio library")
-    (description "\| Bindings to the C portaudio library."
-                 "\| Exposes low-level C bindings and a higher level OCaml interface."
-                 "\| Version corresponds to the portaudio version this was built to."
+    (version 19.6.0)
+    (synopsis "Bindings to the C PortAudio library")
+    (description "Bindings to the C PortAudio library. Exposes low-level C bindings and a higher level OCaml interface. Version corresponds to the portaudio version this was built to."
                  )
     (depends
         conf-portaudio
         ctypes
-        ctypes.foreign
-        ctypes.foreign.threaded
-        ctypes.stubs
+        ctypes-foreign
     )
 )

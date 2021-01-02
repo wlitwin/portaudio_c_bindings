@@ -1,14 +1,13 @@
-let () = 
-    let open Ocaml_portaudio in    
-    initialize();
-    print_endline (get_version_text());
+open Ocaml_portaudio
+
+let stream_default_callback format time =
     let sample_rate = 44100. in
     let dt = 1. /. sample_rate in
     let global_time = ref 0. in
     let stream = Stream.open_default_stream 
         ~num_input_channels:0
         ~num_output_channels:2
-        ~format:SampleFormat.N_Int24
+        ~format
         ~sample_rate
         ~frames_per_buffer:0
         ~callback:(fun _ out ~time_info:_ ~status:_ -> 
@@ -44,13 +43,18 @@ let () =
     in
     Stream.start stream;
     print_endline "Sleeping";
-    sleep 4000;
+    sleep time;
     print_endline "Done Sleeping";
     Stream.stop stream;
+;;
+
+let stream_default_blocking format =
+    let sample_rate = 44100. in
+    let dt = 1. /. sample_rate in
     let stream = Stream.open_default_stream
         ~num_input_channels:0
         ~num_output_channels:2
-        ~format:SampleFormat.N_Float32
+        ~format
         ~sample_rate
         ~frames_per_buffer:0
         ()
@@ -68,5 +72,30 @@ let () =
     Stream.write_non_interleaved stream [|data2; data|];
     sleep 1000;
     Stream.stop stream;
+;;
+
+let stream_params format =
+    StreamParameters.{
+        device = get_default_host_api();
+        channel_count = 1;
+        sample_format = format;
+        suggested_latency = 0.;
+    }
+
+let () = 
+    initialize();
+    print_endline (get_version_text());
+    let fmt_inp = stream_params SampleFormat.I_Float32 in
+    let _fmt_outp = stream_params SampleFormat.N_Int24 in
+    let _strm =
+        Stream.open_stream
+            ~input_params:fmt_inp
+            (*~output_params:fmt_outp*)
+            ~sample_rate:44100.
+            ~frames_per_buffer:0
+            ~stream_flags:Portaudio_types.StreamFlags.no_flag
+            ()
+    in
+
     terminate();
 ;;
