@@ -1,13 +1,13 @@
 (library
- (name portaudio_bindings_ffi)
- (public_name ocaml_portaudio.bindings.ffi)
- (modules portaudio_bindings_ffi)
+ (name portaudio_ffi_stubs)
+ (public_name portaudio_c_bindings.ffi.stubs)
+ (modules portaudio_ffi_stubs)
  (libraries portaudio_types))
 
 (executable
  (name stubgen)
  (modules stubgen)
- (libraries portaudio_bindings_ffi portaudio_types ctypes.stubs ctypes))
+ (libraries portaudio_ffi_stubs portaudio_types ctypes.stubs ctypes))
 
 (rule
  (targets ml_stubs.ml)
@@ -21,9 +21,9 @@
 
 (library
  (name portaudio_ffi)
- (public_name ocaml_portaudio.ffi)
+ (public_name portaudio_c_bindings.ffi)
  (modules portaudio_ffi ml_stubs)
  (foreign_stubs (language c) (names c_stubs))
- (libraries portaudio_bindings_ffi ctypes.stubs ctypes)
+ (libraries portaudio_ffi_stubs ctypes.stubs ctypes)
  (c_library_flags -lportaudio)
  )

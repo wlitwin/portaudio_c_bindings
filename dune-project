@@ -1,5 +1,5 @@
 (lang dune 2.7)
-(name ocaml_portaudio)
+(name portaudio_c_bindings)
 (generate_opam_files true)
 
 (license MIT)
@@ -8,7 +8,7 @@
 (maintainers "walter@litwinczyk.com")
 
 (package
-    (name ocaml_portaudio)
+    (name portaudio_c_bindings)
     (version 19.6.0)
     (synopsis "Bindings to the C PortAudio library")
     (description "Bindings to the C PortAudio library. Exposes low-level C bindings and a higher level OCaml interface. Version corresponds to the portaudio version this was built to."

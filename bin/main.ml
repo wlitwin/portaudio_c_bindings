@@ -1,13 +1,25 @@
-open Ocaml_portaudio
+open Portaudio_c_bindings
 
-let stream_default_callback format time =
+let host_devices() =
+    let count = get_device_count() in
+    for i=0 to count-1 do
+        match get_device_index i with
+        | None -> ()
+        | Some idx ->
+            let device = get_device_info idx in
+            print_endline device.name
+    done
+;;
+
+
+let stream_default_callback time =
     let sample_rate = 44100. in
     let dt = 1. /. sample_rate in
     let global_time = ref 0. in
     let stream = Stream.open_default_stream 
         ~num_input_channels:0
         ~num_output_channels:2
-        ~format
+        ~format:SampleFormat.N_Int24
         ~sample_rate
         ~frames_per_buffer:0
         ~callback:(fun _ out ~time_info:_ ~status:_ -> 
@@ -48,13 +60,13 @@ let stream_default_callback format time =
     Stream.stop stream;
 ;;
 
-let stream_default_blocking format =
+let stream_default_blocking () =
     let sample_rate = 44100. in
     let dt = 1. /. sample_rate in
     let stream = Stream.open_default_stream
         ~num_input_channels:0
         ~num_output_channels:2
-        ~format
+        ~format:SampleFormat.N_Float32
         ~sample_rate
         ~frames_per_buffer:0
         ()
@@ -96,6 +108,8 @@ let () =
             ~stream_flags:Portaudio_types.StreamFlags.no_flag
             ()
     in
-
+    host_devices();
+    stream_default_callback 2000;
+    stream_default_blocking();
     terminate();
 ;;

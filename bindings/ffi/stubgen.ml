@@ -17,7 +17,7 @@ let () =
   | true, true ->
     failwith "Exactly one of -ml and -c must be specified"
   | true, false ->
-    Cstubs.write_ml Format.std_formatter ~concurrency:Cstubs.unlocked ~prefix (module Portaudio_bindings_ffi.Make)
+    Cstubs.write_ml Format.std_formatter ~concurrency:Cstubs.unlocked ~prefix (module Portaudio_ffi_stubs.Make)
   | false, true ->
     print_endline c_headers;
-    Cstubs.write_c Format.std_formatter ~concurrency:Cstubs.unlocked ~prefix (module Portaudio_bindings_ffi.Make)
+    Cstubs.write_c Format.std_formatter ~concurrency:Cstubs.unlocked ~prefix (module Portaudio_ffi_stubs.Make)
