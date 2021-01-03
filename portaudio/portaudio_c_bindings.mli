@@ -211,7 +211,7 @@ val get_version : unit -> int
 val get_version_text : unit -> string
 val get_version_info : unit -> VersionInfo.t
 val get_error_text : PaError.t -> string
-val get_host_api_count : unit -> device_index
+val get_host_api_count : unit -> int
 val get_default_host_api : unit -> device_index
 val get_host_api_info : device_index -> HostApiInfo.t option
 val host_api_type_id_to_host_api_index : HostApiTypeId.t -> device_index option
