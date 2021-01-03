@@ -7,8 +7,8 @@ description:
 maintainer: ["walter@litwinczyk.com"]
 authors: ["Walter Litwinczyk"]
 license: "MIT"
-homepage: "https://github.com/wlitwin/ocaml_portaudio"
-bug-reports: "https://github.com/wlitwin/ocaml_portaudio/issues"
+homepage: "https://github.com/wlitwin/portaudio_c_bindings"
+bug-reports: "https://github.com/wlitwin/portaudio_c_bindings/issues"
 depends: [
   "dune" {>= "2.7"}
   "conf-portaudio"
@@ -30,4 +30,4 @@ build: [
     "@doc" {with-doc}
   ]
 ]
-dev-repo: "git+https://github.com/wlitwin/ocaml_portaudio.git"
+dev-repo: "git+https://github.com/wlitwin/portaudio_c_bindings.git"

@@ -4,7 +4,7 @@
 
 (license MIT)
 (authors "Walter Litwinczyk")
-(source (github wlitwin/ocaml_portaudio))
+(source (github wlitwin/portaudio_c_bindings))
 (maintainers "walter@litwinczyk.com")
 
 (package
