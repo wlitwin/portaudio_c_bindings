@@ -220,4 +220,4 @@ val get_default_input_device : unit -> device_index
 val get_default_output_device : unit -> device_index
 val get_device_info : device_index -> DeviceInfo.t
 val get_device_index : int -> device_index option
-val is_format_supported : ('a, 'b, 'c) StreamParameters.t -> ('a, 'b, 'c) StreamParameters.t -> sample_rate:float -> (unit, PaError.t) Result.t 
+val is_format_supported : ('a, 'b, 'c) StreamParameters.t -> ('a, 'b, 'c) StreamParameters.t -> sample_rate:float -> (unit, PaError.t) Result.result
