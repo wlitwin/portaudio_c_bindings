@@ -11,7 +11,7 @@ homepage: "https://github.com/wlitwin/portaudio_c_bindings"
 bug-reports: "https://github.com/wlitwin/portaudio_c_bindings/issues"
 depends: [
   "dune" {>= "2.7"}
-  "result"
+  "ocaml" {>= "4.08"}
   "conf-portaudio"
   "ctypes"
   "ctypes-foreign"

@@ -14,7 +14,7 @@
     (description "Bindings to the C PortAudio library. Exposes low-level C bindings and a higher level OCaml interface. Version corresponds to the portaudio version this was built to."
                  )
     (depends
-        result
+        (ocaml (>= 4.08))
         conf-portaudio
         ctypes
         ctypes-foreign
