@@ -623,5 +623,5 @@ let is_format_supported input output ~sample_rate =
     let output = StreamParameters.to_cffi output in
     let result = C_ffi.is_format_supported input output sample_rate in
     match result with	
-    | NoError -> Result.Ok ()
-    | err -> Result.Error err
+    | NoError -> Result.ok ()
+    | err -> Result.error err
