@@ -214,14 +214,16 @@ module Stream = struct
          CArray.set arr (offset + 1) (value lsr 8);
          CArray.set arr (offset + 2) (value lsr 16);
     ;;
+    
 
+    let _24_bit_mask = ~-1 - 0xffffff
     let get_sample_24 arr offset =
          let v1 = CArray.get arr (offset + 0) land 0xff in
          let v2 = CArray.get arr (offset + 1) land 0xff in
          let v3 = CArray.get arr (offset + 2) land 0xff in
          let num = (v3 lsl 16) lor (v2 lsl 8) lor v1 in
          if v3 land 0x80 > 0 then (
-             num lor 0x7FFFFFFFFF000000
+             num lor _24_bit_mask
          ) else num
     ;;
 
